@@ -431,4 +431,104 @@ public class H3TraversalFunctions {
       }
     }
   }
+
+  @FunctionTemplate(names = {"h3Line", "h3_line"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE)
+  public static class h3Line implements DrillSimpleFunc {
+
+    @Param
+    BigIntHolder startHolder;
+
+    @Param
+    BigIntHolder endHolder;
+
+    @Output
+    BaseWriter.ComplexWriter outWriter;
+
+    @Workspace
+    com.uber.h3core.H3Core h3;
+
+    @Override
+    public void setup() {
+      try {
+        h3 = com.uber.h3core.H3Core.newInstance();
+      } catch (java.io.IOException e) {
+        h3 = null;
+      }
+    }
+
+    @Override
+    public void eval() {
+      if (h3 == null) {
+        return;
+      }
+
+      long start = startHolder.value;
+      long end = endHolder.value;
+      java.util.List<Long> line;
+      try {
+       line = h3.h3Line(start, end);
+      } catch (com.uber.h3core.exceptions.LineUndefinedException e) {
+        return;
+      }
+
+      org.apache.drill.exec.vector.complex.writer.BaseWriter.ListWriter queryListWriter = outWriter.rootAsList();
+
+      for (Long result : line) {
+        queryListWriter.bigInt().writeBigInt(result);
+      }
+    }
+  }
+
+
+  @FunctionTemplate(names = {"h3Line", "h3_line"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE)
+  public static class h3StringLine implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder startHolder;
+
+    @Param
+    VarCharHolder endHolder;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Output
+    BaseWriter.ComplexWriter outWriter;
+
+    @Workspace
+    com.uber.h3core.H3Core h3;
+
+    @Override
+    public void setup() {
+      try {
+        h3 = com.uber.h3core.H3Core.newInstance();
+      } catch (java.io.IOException e) {
+        h3 = null;
+      }
+    }
+
+    @Override
+    public void eval() {
+      if (h3 == null) {
+        return;
+      }
+
+      String start = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(startHolder);
+      String end = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(endHolder);
+      java.util.List<String> line;
+      try {
+        line = h3.h3Line(start, end);
+      } catch (com.uber.h3core.exceptions.LineUndefinedException e) {
+        return;
+      }
+
+      org.apache.drill.exec.vector.complex.writer.BaseWriter.ListWriter queryListWriter = outWriter.rootAsList();
+      for (String result : line) {
+        buffer.setBytes(0, result.getBytes());
+        queryListWriter.varChar().writeVarChar(0, result.getBytes().length, buffer);
+      }
+    }
+  }
 }

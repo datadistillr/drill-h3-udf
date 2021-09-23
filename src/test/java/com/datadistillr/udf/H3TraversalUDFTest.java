@@ -147,4 +147,38 @@ public class H3TraversalUDFTest extends ClusterTest {
     new RowSetComparison(expected).verifyAndClearAll(results);
   }
 
+  @Test
+  public void testH3Line() throws Exception {
+    String sql = "SELECT h3Line(599686042433355775, 599686023106002943) as line FROM (VALUES(1))";
+    QueryBuilder q = client.queryBuilder().sql(sql);
+    RowSet results = q.rowSet();
+
+    TupleMetadata expectedSchema = new SchemaBuilder()
+      .addArray("line", MinorType.BIGINT)
+      .build();
+
+    RowSet expected = client.rowSetBuilder(expectedSchema)
+      .addRow((Object) longArray(599686042433355775L, 599686043507097599L, 599686023106002943L))
+      .build();
+
+    new RowSetComparison(expected).verifyAndClearAll(results);
+  }
+
+  @Test
+  public void testH3StringLine() throws Exception {
+    String sql = "SELECT h3Line('85283473fffffff', '8528342bfffffff') as line FROM (VALUES(1))";
+    QueryBuilder q = client.queryBuilder().sql(sql);
+    RowSet results = q.rowSet();
+
+    TupleMetadata expectedSchema = new SchemaBuilder()
+      .addArray("line", MinorType.VARCHAR)
+      .build();
+
+    RowSet expected = client.rowSetBuilder(expectedSchema)
+      .addRow((Object) strArray("85283473fffffff","85283477fffffff","8528342bfffffff"))
+      .build();
+
+    new RowSetComparison(expected).verifyAndClearAll(results);
+  }
+
 }

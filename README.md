@@ -32,3 +32,8 @@ All Drill functions can accept h3 either as a `BIGINT` or a `VARCHAR`.  The func
 * `kRing(<origin h3>, <k>)`: k-rings produces indices within k distance of the origin index. k-ring 0 is defined as the origin index, k-ring 1 is defined as k-ring 0 and all 
   neighboring indices, and so on. Output is placed in the provided array in no particular order. Elements of the output array may be left zero, as can happen when crossing a pentagon.
 * `kRingDistances(<origin h3>, <k>)`: k-rings produces indices within k distance of the origin index. k-ring 0 is defined as the origin index, k-ring 1 is defined as k-ring 0 and all neighboring indices, and so on. Output is placed in the provided array in no particular order. Elements of the output array may be left zero, as can happen when crossing a pentagon.
+* `hexRing(<h3>, <k>)`: Produces the hollow hexagonal ring centered at origin with sides of length k. Returns 0 if no pentagonal distortion was encountered.
+* `h3Line(<h3 start>, <h3 end>)`: Given two H3 indexes, return the line of indexes between them (inclusive).  This function may fail to find the line between two indexes, for 
+  example if they are very far apart. It may also fail when finding distances for indexes on opposite sides of a pentagon.
+* `h3Distance(<a>, <b>)`:  Returns the distance in grid cells between the two indexes. Returns a negative number if finding the distance failed. Finding the distance can fail 
+  because the two indexes are not comparable (different resolutions), too far apart, or are separated by pentagonal distortion. This is the same set of limitations as the local IJ coordinate space functions.
