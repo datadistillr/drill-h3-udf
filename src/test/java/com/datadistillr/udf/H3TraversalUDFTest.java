@@ -18,6 +18,7 @@
 
 package com.datadistillr.udf;
 
+import org.apache.drill.common.types.TypeProtos.DataMode;
 import org.apache.drill.common.types.TypeProtos.MinorType;
 import org.apache.drill.exec.physical.rowSet.RowSet;
 import org.apache.drill.exec.record.metadata.SchemaBuilder;
@@ -181,4 +182,37 @@ public class H3TraversalUDFTest extends ClusterTest {
     new RowSetComparison(expected).verifyAndClearAll(results);
   }
 
+  @Test
+  public void testH3Distance() throws Exception {
+    String sql = "SELECT h3Distance(599686042433355775, 599686023106002943) as distance FROM (VALUES(1))";
+    QueryBuilder q = client.queryBuilder().sql(sql);
+    RowSet results = q.rowSet();
+
+    TupleMetadata expectedSchema = new SchemaBuilder()
+      .add("distance", MinorType.BIGINT)
+      .build();
+
+    RowSet expected = client.rowSetBuilder(expectedSchema)
+      .addRow(2)
+      .build();
+
+    new RowSetComparison(expected).verifyAndClearAll(results);
+  }
+
+  @Test
+  public void testH3StringDistance() throws Exception {
+    String sql = "SELECT h3Distance('85283473fffffff', '8528342bfffffff') as distance FROM (VALUES(1))";
+    QueryBuilder q = client.queryBuilder().sql(sql);
+    RowSet results = q.rowSet();
+
+    TupleMetadata expectedSchema = new SchemaBuilder()
+      .add("distance", MinorType.BIGINT)
+      .build();
+
+    RowSet expected = client.rowSetBuilder(expectedSchema)
+      .addRow(2)
+      .build();
+
+    new RowSetComparison(expected).verifyAndClearAll(results);
+  }
 }

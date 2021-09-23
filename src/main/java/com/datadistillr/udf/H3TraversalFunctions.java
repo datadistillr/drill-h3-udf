@@ -21,6 +21,7 @@ package com.datadistillr.udf;
 import io.netty.buffer.DrillBuf;
 import org.apache.drill.exec.expr.DrillSimpleFunc;
 import org.apache.drill.exec.expr.annotations.FunctionTemplate;
+import org.apache.drill.exec.expr.annotations.FunctionTemplate.NullHandling;
 import org.apache.drill.exec.expr.annotations.Output;
 import org.apache.drill.exec.expr.annotations.Param;
 import org.apache.drill.exec.expr.annotations.Workspace;
@@ -529,6 +530,97 @@ public class H3TraversalFunctions {
         buffer.setBytes(0, result.getBytes());
         queryListWriter.varChar().writeVarChar(0, result.getBytes().length, buffer);
       }
+    }
+  }
+
+  @FunctionTemplate(names = {"h3Distance", "h3_distance"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = NullHandling.NULL_IF_NULL)
+  public static class h3Distance implements DrillSimpleFunc {
+
+    @Param
+    BigIntHolder startHolder;
+
+    @Param
+    BigIntHolder endHolder;
+
+    @Output
+    BigIntHolder out;
+
+    @Workspace
+    com.uber.h3core.H3Core h3;
+
+    @Override
+    public void setup() {
+      try {
+        h3 = com.uber.h3core.H3Core.newInstance();
+      } catch (java.io.IOException e) {
+        h3 = null;
+      }
+    }
+
+    @Override
+    public void eval() {
+      if (h3 == null) {
+        return;
+      }
+
+      long start = startHolder.value;
+      long end = endHolder.value;
+      int distance;
+      try {
+        distance = h3.h3Distance(start, end);
+      } catch (com.uber.h3core.exceptions.DistanceUndefinedException e) {
+        distance = -1;
+      }
+
+      out.value = distance;
+    }
+  }
+
+
+  @FunctionTemplate(names = {"h3Distance", "h3_distance"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = NullHandling.NULL_IF_NULL)
+  public static class h3StringDistance implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder startHolder;
+
+    @Param
+    VarCharHolder endHolder;
+
+    @Output
+    BigIntHolder out;
+
+    @Workspace
+    com.uber.h3core.H3Core h3;
+
+    @Override
+    public void setup() {
+      try {
+        h3 = com.uber.h3core.H3Core.newInstance();
+      } catch (java.io.IOException e) {
+        h3 = null;
+      }
+    }
+
+    @Override
+    public void eval() {
+      if (h3 == null) {
+        return;
+      }
+
+      String start = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(startHolder);
+      String end = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(endHolder);
+      int distance;
+      try {
+        distance = h3.h3Distance(start, end);
+      } catch (com.uber.h3core.exceptions.DistanceUndefinedException e) {
+        distance = -1;
+      }
+
+      out.value = distance;
     }
   }
 }
