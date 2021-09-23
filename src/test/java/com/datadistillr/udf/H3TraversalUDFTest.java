@@ -18,12 +18,10 @@
 
 package com.datadistillr.udf;
 
-import org.apache.drill.common.types.TypeProtos.DataMode;
 import org.apache.drill.common.types.TypeProtos.MinorType;
 import org.apache.drill.exec.physical.rowSet.RowSet;
 import org.apache.drill.exec.record.metadata.SchemaBuilder;
 import org.apache.drill.exec.record.metadata.TupleMetadata;
-import org.apache.drill.exec.rpc.RpcException;
 import org.apache.drill.test.ClusterFixture;
 import org.apache.drill.test.ClusterFixtureBuilder;
 import org.apache.drill.test.ClusterTest;
@@ -32,8 +30,7 @@ import org.apache.drill.test.rowSet.RowSetComparison;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-
-public class H3IndexingUDFTest extends ClusterTest {
+public class H3TraversalUDFTest extends ClusterTest {
 
   @BeforeClass
   public static void setup() throws Exception {
@@ -42,80 +39,55 @@ public class H3IndexingUDFTest extends ClusterTest {
   }
 
   @Test
-  public void testGeoToH3() throws RpcException {
-    String sql = "SELECT geoToH3(37.775938728915946, -122.41795063018799, 9) AS address " +
-      "FROM (VALUES(1))";
+  public void testKRing() throws Exception {
+    String sql = "SELECT flatten(kRing(599686042433355775, 5)) AS ring FROM (VALUES(1)) LIMIT 5";
 
     QueryBuilder q = client.queryBuilder().sql(sql);
     RowSet results = q.rowSet();
 
     TupleMetadata expectedSchema = new SchemaBuilder()
-      .add("address", MinorType.BIGINT)
+      .add("ring", MinorType.BIGINT)
       .build();
 
     RowSet expected = client.rowSetBuilder(expectedSchema)
-      .addRow(617700169958293503L)
+      .addRow(599686042433355775L)
+      .addRow(599686030622195711L)
+      .addRow(599686044580839423L)
+      .addRow(599686038138388479L)
+      .addRow(599686043507097599L)
       .build();
 
     new RowSetComparison(expected).verifyAndClearAll(results);
   }
 
   @Test
-  public void testGeoToH3Address() throws RpcException {
-    String sql = "SELECT geoToH3Address(37.775938728915946, -122.41795063018799, 9) AS address " +
-      "FROM (VALUES(1))";
+  public void testStringKRing() throws Exception {
+    String sql = "SELECT flatten(kRing('8928308280fffff', 5)) AS ring FROM (VALUES(1)) LIMIT 5";
 
     QueryBuilder q = client.queryBuilder().sql(sql);
     RowSet results = q.rowSet();
 
     TupleMetadata expectedSchema = new SchemaBuilder()
-      .add("address", MinorType.VARCHAR)
+      .add("ring", MinorType.VARCHAR)
       .build();
 
     RowSet expected = client.rowSetBuilder(expectedSchema)
       .addRow("8928308280fffff")
+      .addRow("8928308280bffff")
+      .addRow("89283082873ffff")
+      .addRow("89283082877ffff")
+      .addRow("8928308283bffff")
       .build();
 
     new RowSetComparison(expected).verifyAndClearAll(results);
   }
 
   @Test
-  public void testH3ToGeoPoint() throws RpcException {
-    String sql = "SELECT geo_data.geo_point.latitude AS latitude, geo_data.geo_point.longitude AS longitude FROM (SELECT h3ToGeo(617700169958293503) AS geo_point " +
-      "FROM (VALUES(1))) AS geo_data";
+  public void testKRingDistances() throws Exception {
+    String sql = "SELECT flatten(kRingDistances(599686042433355775, 5)) AS ring FROM (VALUES(1))";
 
     QueryBuilder q = client.queryBuilder().sql(sql);
     RowSet results = q.rowSet();
-
-    TupleMetadata expectedSchema = new SchemaBuilder()
-      .add("latitude", MinorType.FLOAT8, DataMode.OPTIONAL)
-      .add("longitude", MinorType.FLOAT8, DataMode.OPTIONAL)
-      .build();
-
-    RowSet expected = client.rowSetBuilder(expectedSchema)
-      .addRow(37.77670234943567, -122.41845932318311)
-      .build();
-
-    new RowSetComparison(expected).verifyAndClearAll(results);
-  }
-
-  @Test
-  public void testH3ToGeoPointFromString() throws RpcException {
-    String sql = "SELECT geo_data.geo_point.latitude AS latitude, geo_data.geo_point.longitude AS longitude FROM (SELECT h3ToGeo('8928308280fffff') AS geo_point " +
-      "FROM (VALUES(1))) AS geo_data";
-
-    QueryBuilder q = client.queryBuilder().sql(sql);
-    RowSet results = q.rowSet();
-
-    TupleMetadata expectedSchema = new SchemaBuilder()
-      .add("latitude", MinorType.FLOAT8, DataMode.OPTIONAL)
-      .add("longitude", MinorType.FLOAT8, DataMode.OPTIONAL)
-      .build();
-
-    RowSet expected = client.rowSetBuilder(expectedSchema)
-      .addRow(37.77670234943567, -122.41845932318311)
-      .build();
-
-    new RowSetComparison(expected).verifyAndClearAll(results);
+    results.print();
   }
 }

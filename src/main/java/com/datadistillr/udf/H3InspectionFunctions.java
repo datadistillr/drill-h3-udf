@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.datadistillr.udf;
 
 import io.netty.buffer.DrillBuf;
@@ -363,4 +381,70 @@ public class H3InspectionFunctions {
   }
 
 
+  @FunctionTemplate(names =  {"h3IsPentagon", "h3_is_pentagon"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class h3IsPentagon implements DrillSimpleFunc {
+
+    @Param
+    BigIntHolder h3Address;
+
+    @Output
+    BitHolder result;
+
+    @Workspace
+    com.uber.h3core.H3Core h3;
+
+    @Override
+    public void setup() {
+      try {
+        h3 = com.uber.h3core.H3Core.newInstance();
+      } catch (java.io.IOException e) {
+        h3 = null;
+      }
+    }
+
+    @Override
+    public void eval() {
+      if (h3 == null) {
+        result.value = 0;
+      } else {
+        result.value = h3.h3IsPentagon(h3Address.value) ? 1 : 0;
+      }
+    }
+  }
+
+  @FunctionTemplate(names = {"h3IsPentagon", "h3_is_pentagon"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class h3StringIsPentagon implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder h3AddressString;
+
+    @Output
+    BitHolder result;
+
+    @Workspace
+    com.uber.h3core.H3Core h3;
+
+    @Override
+    public void setup() {
+      try {
+        h3 = com.uber.h3core.H3Core.newInstance();
+      } catch (java.io.IOException e) {
+        h3 = null;
+      }
+    }
+
+    @Override
+    public void eval() {
+      if (h3 == null) {
+        result.value = 0;
+      } else {
+        String h3Address = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(h3AddressString);
+        result.value = h3.h3IsPentagon(h3Address) ? 1 : 0;
+      }
+    }
+  }
 }

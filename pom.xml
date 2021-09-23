@@ -9,6 +9,10 @@
   <version>1.0</version>
   <name>Drill H3 Functions</name>
 
+  <properties>
+    <jackson.version>2.12.5</jackson.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.drill.exec</groupId>
@@ -77,6 +81,21 @@
           <groupId>com.google.guava</groupId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>${jackson.version}</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
