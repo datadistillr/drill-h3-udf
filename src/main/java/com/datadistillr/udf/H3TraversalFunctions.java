@@ -169,4 +169,266 @@ public class H3TraversalFunctions {
       }
     }
   }
+
+  @FunctionTemplate(names = {"kRingDistances"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE)
+  public static class kRingStringDistances implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder originInput;
+
+    @Param
+    IntHolder kInput;
+
+    @Output
+    BaseWriter.ComplexWriter outWriter;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Workspace
+    com.uber.h3core.H3Core h3;
+
+    @Override
+    public void setup() {
+      try {
+        h3 = com.uber.h3core.H3Core.newInstance();
+      } catch (java.io.IOException e) {
+        h3 = null;
+      }
+    }
+
+    @Override
+    public void eval() {
+      if (h3 == null) {
+        return;
+      }
+
+      String h3Address = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(originInput);
+      int k = kInput.value;
+
+      java.util.List<java.util.List<String>> results = h3.kRingDistances(h3Address, k);
+      org.apache.drill.exec.vector.complex.writer.BaseWriter.ListWriter queryListWriter = outWriter.rootAsList();
+      org.apache.drill.exec.vector.complex.writer.BaseWriter.ListWriter innerListWriter;
+      for (java.util.List<String> innerList : results) {
+        innerListWriter = queryListWriter.list();
+        innerListWriter.startList();
+        for (String result: innerList) {
+          buffer.setBytes(0, result.getBytes());
+          innerListWriter.varChar().writeVarChar(0, result.length(), buffer);
+        }
+        innerListWriter.endList();
+      }
+    }
+  }
+
+
+  @FunctionTemplate(names = {"hexRange", "hex_range"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE)
+  public static class hexRange implements DrillSimpleFunc {
+
+    @Param
+    BigIntHolder originInput;
+
+    @Param
+    IntHolder kInput;
+
+    @Output
+    BaseWriter.ComplexWriter outWriter;
+
+    @Workspace
+    com.uber.h3core.H3Core h3;
+
+    @Override
+    public void setup() {
+      try {
+        h3 = com.uber.h3core.H3Core.newInstance();
+      } catch (java.io.IOException e) {
+        h3 = null;
+      }
+    }
+
+    @Override
+    public void eval() {
+      if (h3 == null) {
+        return;
+      }
+
+      long origin = originInput.value;
+      int k = kInput.value;
+      java.util.List<java.util.List<Long>> results;
+      try {
+        results = h3.hexRange(origin, k);
+      } catch (com.uber.h3core.exceptions.PentagonEncounteredException e) {
+        return;
+      }
+      org.apache.drill.exec.vector.complex.writer.BaseWriter.ListWriter queryListWriter = outWriter.rootAsList();
+      org.apache.drill.exec.vector.complex.writer.BaseWriter.ListWriter innerListWriter;
+      for (java.util.List<Long> innerList : results) {
+        innerListWriter = queryListWriter.list();
+        innerListWriter.startList();
+        for (Long result: innerList) {
+          innerListWriter.bigInt().writeBigInt(result);
+        }
+        innerListWriter.endList();
+      }
+    }
+  }
+
+  @FunctionTemplate(names = {"hexRange", "hex_range"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE)
+  public static class hexRangeString implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder originInput;
+
+    @Param
+    IntHolder kInput;
+
+    @Output
+    BaseWriter.ComplexWriter outWriter;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Workspace
+    com.uber.h3core.H3Core h3;
+
+    @Override
+    public void setup() {
+      try {
+        h3 = com.uber.h3core.H3Core.newInstance();
+      } catch (java.io.IOException e) {
+        h3 = null;
+      }
+    }
+
+    @Override
+    public void eval() {
+      if (h3 == null) {
+        return;
+      }
+
+      String h3Address = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(originInput);
+      int k = kInput.value;
+      java.util.List<java.util.List<String>> results;
+      try {
+        results = h3.hexRange(h3Address, k);
+      } catch (com.uber.h3core.exceptions.PentagonEncounteredException e) {
+        return;
+      }
+
+      org.apache.drill.exec.vector.complex.writer.BaseWriter.ListWriter queryListWriter = outWriter.rootAsList();
+      org.apache.drill.exec.vector.complex.writer.BaseWriter.ListWriter innerListWriter;
+
+      for (java.util.List<String> innerList : results) {
+        innerListWriter = queryListWriter.list();
+        innerListWriter.startList();
+        for (String result: innerList) {
+          buffer.setBytes(0, result.getBytes());
+          innerListWriter.varChar().writeVarChar(0, result.length(), buffer);
+        }
+        innerListWriter.endList();
+      }
+    }
+  }
+
+  @FunctionTemplate(names = {"hexRing", "hex_ring"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE)
+  public static class hexRing implements DrillSimpleFunc {
+
+    @Param
+    BigIntHolder originInput;
+
+    @Param
+    IntHolder kInput;
+
+    @Output
+    BaseWriter.ComplexWriter outWriter;
+
+    @Workspace
+    com.uber.h3core.H3Core h3;
+
+    @Override
+    public void setup() {
+      try {
+        h3 = com.uber.h3core.H3Core.newInstance();
+      } catch (java.io.IOException e) {
+        h3 = null;
+      }
+    }
+
+    @Override
+    public void eval() {
+      if (h3 == null) {
+        return;
+      }
+
+      long origin = originInput.value;
+      int k = kInput.value;
+
+      java.util.List<Long> results = null;
+      try {
+        results = h3.hexRing(origin, k);
+      } catch (com.uber.h3core.exceptions.PentagonEncounteredException e) {
+        return;
+      }
+      org.apache.drill.exec.vector.complex.writer.BaseWriter.ListWriter queryListWriter = outWriter.rootAsList();
+
+      for (Long result : results) {
+        queryListWriter.bigInt().writeBigInt(result);
+      }
+    }
+  }
+
+  @FunctionTemplate(names = {"hexRing", "hex_ring"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE)
+  public static class hexRingFromString implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder originInput;
+
+    @Param
+    IntHolder kInput;
+
+    @Output
+    BaseWriter.ComplexWriter outWriter;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Workspace
+    com.uber.h3core.H3Core h3;
+
+    @Override
+    public void setup() {
+      try {
+        h3 = com.uber.h3core.H3Core.newInstance();
+      } catch (java.io.IOException e) {
+        h3 = null;
+      }
+    }
+
+    @Override
+    public void eval() {
+      if (h3 == null) {
+        return;
+      }
+
+      String h3Address = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(originInput);
+      int k = kInput.value;
+
+      java.util.List<String> results = null;
+      try {
+        results = h3.hexRing(h3Address, k);
+      } catch (com.uber.h3core.exceptions.PentagonEncounteredException e) {
+        return;
+      }
+      org.apache.drill.exec.vector.complex.writer.BaseWriter.ListWriter queryListWriter = outWriter.rootAsList();
+      for (String result : results) {
+        buffer.setBytes(0, result.getBytes());
+        queryListWriter.varChar().writeVarChar(0, result.getBytes().length, buffer);
+      }
+    }
+  }
 }
