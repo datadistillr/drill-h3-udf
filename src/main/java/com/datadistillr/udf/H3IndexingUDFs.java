@@ -124,10 +124,13 @@ public class H3IndexingUDFs {
       if (h3 != null) {
         String result = h3.geoToH3Address(latitude, longitude, resolution);
 
-        out.buffer = buffer;
+        byte[] rowStringBytes = result.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        buffer = buffer.reallocIfNeeded(rowStringBytes.length);
+        buffer.setBytes(0, rowStringBytes);
+
         out.start = 0;
-        out.end = result.getBytes().length;
-        buffer.setBytes(0, result.getBytes());
+        out.end = rowStringBytes.length;
+        out.buffer = buffer;
       }
     }
   }

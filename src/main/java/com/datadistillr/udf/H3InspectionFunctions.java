@@ -28,6 +28,7 @@ import org.apache.drill.exec.expr.holders.BigIntHolder;
 import org.apache.drill.exec.expr.holders.BitHolder;
 import org.apache.drill.exec.expr.holders.IntHolder;
 import org.apache.drill.exec.expr.holders.VarCharHolder;
+import org.apache.drill.exec.vector.complex.writer.BaseWriter;
 
 import javax.inject.Inject;
 
@@ -118,7 +119,6 @@ public class H3InspectionFunctions {
     @Workspace
     com.uber.h3core.H3Core h3;
 
-
     @Override
     public void setup() {
       try {
@@ -152,7 +152,6 @@ public class H3InspectionFunctions {
     @Workspace
     com.uber.h3core.H3Core h3;
 
-
     @Override
     public void setup() {
       try {
@@ -184,7 +183,6 @@ public class H3InspectionFunctions {
 
     @Workspace
     com.uber.h3core.H3Core h3;
-
 
     @Override
     public void setup() {
@@ -223,7 +221,6 @@ public class H3InspectionFunctions {
 
     @Workspace
     com.uber.h3core.H3Core h3;
-
 
     @Override
     public void setup() {
@@ -444,6 +441,83 @@ public class H3InspectionFunctions {
       } else {
         String h3Address = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(h3AddressString);
         result.value = h3.h3IsPentagon(h3Address) ? 1 : 0;
+      }
+    }
+  }
+
+  @FunctionTemplate(names = {"h3GetFaces", "h3_get_faces"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE)
+  public static class h3GetFaces implements DrillSimpleFunc {
+
+    @Param
+    BigIntHolder originInput;
+
+    @Output
+    BaseWriter.ComplexWriter outWriter;
+
+    @Workspace
+    com.uber.h3core.H3Core h3;
+
+    @Override
+    public void setup() {
+      try {
+        h3 = com.uber.h3core.H3Core.newInstance();
+      } catch (java.io.IOException e) {
+        h3 = null;
+      }
+    }
+
+    @Override
+    public void eval() {
+      if (h3 == null) {
+        return;
+      }
+
+      long origin = originInput.value;
+
+      java.util.Collection<Integer> results = h3.h3GetFaces(origin);
+      org.apache.drill.exec.vector.complex.writer.BaseWriter.ListWriter queryListWriter = outWriter.rootAsList();
+
+      for (Integer result : results) {
+        queryListWriter.integer().writeInt(result);
+      }
+    }
+  }
+
+  @FunctionTemplate(names = {"h3GetFaces", "h3_get_faces"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE)
+  public static class h3GetFacesString implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder originInput;
+
+    @Output
+    BaseWriter.ComplexWriter outWriter;
+
+    @Workspace
+    com.uber.h3core.H3Core h3;
+
+    @Override
+    public void setup() {
+      try {
+        h3 = com.uber.h3core.H3Core.newInstance();
+      } catch (java.io.IOException e) {
+        h3 = null;
+      }
+    }
+
+    @Override
+    public void eval() {
+      if (h3 == null) {
+        return;
+      }
+
+      String h3Address = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(originInput);
+
+      java.util.Collection<Integer> results = h3.h3GetFaces(h3Address);
+      org.apache.drill.exec.vector.complex.writer.BaseWriter.ListWriter queryListWriter = outWriter.rootAsList();
+      for (Integer result : results) {
+        queryListWriter.integer().writeInt(result);
       }
     }
   }
