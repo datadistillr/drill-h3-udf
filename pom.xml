@@ -10,7 +10,7 @@
   <name>Drill H3 Functions</name>
 
   <properties>
-    <jackson.version>2.12.5</jackson.version>
+    <jackson.version>2.12.7.1</jackson.version>
   </properties>
 
   <dependencies>
